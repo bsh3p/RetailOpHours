@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coverage Hours — Brisbane Time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f12;
+    --surface: #161820;
+    --surface2: #1e2028;
+    --border: rgba(255,255,255,0.07);
+    --border-strong: rgba(255,255,255,0.14);
+    --text: #e8e9ec;
+    --text-muted: #7c7f8e;
+    --text-dim: #474a57;
+    --nz: #1fcb8a;   --nz-bg: rgba(31,203,138,0.15);
+    --au: #4ea8ff;   --au-bg: rgba(78,168,255,0.15);
+    --za: #ff6b9d;   --za-bg: rgba(255,107,157,0.15);
+    --ta: #c084fc;   --ta-bg: rgba(192,132,252,0.15);
+    --uk: #f97316;   --uk-bg: rgba(249,115,22,0.15);
+    --open: #22c55e; --open-bg: rgba(34,197,94,0.15);
+    --now: #ffb340;  --now-bg: rgba(255,179,64,0.12);
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --label-w: 220px;
+    --cell-w: 38px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-mono); min-height: 100vh; padding: 0; }
+
+  /* ── Page shell ── */
+  .page-shell { padding: 20px 32px 24px; }
+
+  /* ── Page tabs (top level) ── */
+  .page-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border-strong);
+    margin-bottom: 0;
+    padding: 0 32px;
+    background: var(--surface);
+  }
+  .page-tab {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 22px;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    letter-spacing: 0.02em;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    transition: color 0.15s;
+  }
+  .page-tab:hover { color: var(--text); }
+  .page-tab.active { color: var(--text); border-bottom-color: var(--now); }
+  .page-tab-link {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 22px;
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+  }
+  .page-tab-link:hover { color: var(--text); }
+
+  .page-content { display: none; }
+  .page-content.active { display: block; }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header-left h1 { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; color: var(--text); margin-bottom: 2px; }
+  .header-left p { font-size: 12px; color: var(--text-muted); letter-spacing: 0.04em; }
+  .now-badge { background: var(--surface2); border: 0.5px solid var(--border-strong); border-radius: 8px; padding: 6px 14px; text-align: right; min-width: 160px; }
+  .now-badge .now-time { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--now); letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .now-badge .now-day { font-size: 11px; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* ── Toolbars ── */
+  .toolbar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 0; flex-wrap: wrap; }
+  .toolbar-label { font-size: 11px; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+  .day-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+  .day-btn { font-family: var(--font-mono); font-size: 11px; padding: 5px 10px; border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-muted); border-radius: 5px; cursor: pointer; letter-spacing: 0.04em; transition: all 0.15s ease; }
+  .day-btn:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+  .day-btn.active { background: var(--surface2); border-color: rgba(255,255,255,0.3); color: var(--text); }
+  .day-btn.today-btn { border-color: var(--now); color: var(--now); }
+  .day-btn.today-btn.active { background: rgba(255,179,64,0.1); }
+  .divider-v { width: 0.5px; height: 24px; background: var(--border-strong); margin: 0 4px; flex-shrink: 0; }
+  .divider-h { width: 100%; height: 0.5px; background: var(--border); margin: 6px 0; }
+  .toggle-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .toggle-btn { font-family: var(--font-mono); font-size: 11px; padding: 5px 12px; border-radius: 5px; cursor: pointer; letter-spacing: 0.04em; transition: all 0.15s ease; display: flex; align-items: center; gap: 7px; border: 0.5px solid; }
+  .toggle-btn .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .toggle-btn[data-country="uk"] { border-color: var(--uk); color: var(--uk); }
+  .toggle-btn[data-country="nz"] { border-color: var(--nz); color: var(--nz); }
+  .toggle-btn[data-country="au"] { border-color: var(--au); color: var(--au); }
+  .toggle-btn[data-country="za"] { border-color: var(--za); color: var(--za); }
+  .toggle-btn[data-country="uk"].active { background: var(--uk-bg); }
+  .toggle-btn[data-country="nz"].active { background: var(--nz-bg); }
+  .toggle-btn[data-country="au"].active { background: var(--au-bg); }
+  .toggle-btn[data-country="za"].active { background: var(--za-bg); }
+  .toggle-btn[data-brand="fcb"] { border-color: #e8c87a; color: #e8c87a; }
+  .toggle-btn[data-brand="ta"]  { border-color: var(--ta); color: var(--ta); }
+  .toggle-btn[data-brand="fcb"].active { background: rgba(232,200,122,0.15); border-color: #e8c87a; color: #e8c87a; }
+  .toggle-btn[data-brand="ta"].active  { background: var(--ta-bg); }
+  .toggle-btn:not(.active) { opacity: 0.35; }
+  .toggle-btn:hover { opacity: 1 !important; }
+
+  /* ── Reset button ── */
+  .reset-btn {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 5px;
+    border: 0.5px solid var(--border-strong);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+    margin-left: auto;
+  }
+  .reset-btn:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+  .reset-btn svg { opacity: 0.6; }
+  .reset-btn:hover svg { opacity: 1; }
+
+  /* ── View sub-tabs (Simple / Brand) ── */
+  .view-tabs { display: flex; gap: 4px; }
+  .view-tab {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 5px 14px;
+    border-radius: 5px;
+    border: 0.5px solid var(--border-strong);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+  }
+  .view-tab:hover { color: var(--text); border-color: rgba(255,255,255,0.3); }
+  .view-tab.active { background: var(--surface2); border-color: rgba(255,255,255,0.3); color: var(--text); }
+
+  /* ── Grid ── */
+  .grid-outer { overflow-x: auto; margin-top: 10px; }
+  .grid-wrap { display: grid; grid-template-columns: var(--label-w) repeat(24, var(--cell-w)); width: max-content; min-width: calc(var(--label-w) + 24 * var(--cell-w)); }
+  .gh-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; padding-bottom: 4px; padding-right: 20px; border-bottom: 0.5px solid var(--border); display: flex; align-items: flex-end; }
+  .gh-cell { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); text-align: left; padding-bottom: 4px; padding-left: 2px; border-bottom: 0.5px solid var(--border); white-space: nowrap; overflow: visible; position: relative; }
+  .gh-cell.now-col-h { color: var(--now); }
+  .day-heading { grid-column: 1 / -1; font-family: var(--font-display); font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; padding: 7px 20px 3px 0; border-bottom: 0.5px solid var(--border); }
+  .day-heading.today-label { color: var(--now); }
+  .entry-label { font-size: 11px; color: var(--text-dim); letter-spacing: 0.03em; white-space: nowrap; display: flex; align-items: center; padding: 2px 20px 2px 0; }
+  .entry-cell { padding: 1px 1px; display: flex; align-items: center; position: relative; }
+  .entry-cell.now-col { background: var(--now-bg); }
+  .bar { height: 14px; border-radius: 3px; width: 100%; cursor: default; position: relative; transition: filter 0.1s; }
+  .bar:hover { filter: brightness(1.25); }
+  .bar-fcb-nz { background: var(--nz); opacity: 0.85; }
+  .bar-fcb-au { background: var(--au); opacity: 0.85; }
+  .bar-fcb-za { background: var(--za); opacity: 0.85; }
+  .bar-fcb-uk { background: var(--uk); opacity: 0.85; }
+  .bar-ta-nz  { background: var(--ta); opacity: 0.85; }
+  .bar-ta-au  { background: var(--ta); opacity: 0.85; }
+  .bar-open   { background: var(--open); opacity: 0.9; }
+  .bar-off    { background: transparent; }
+  .bar.now-ring { outline: 2px solid var(--now); outline-offset: -1px; }
+  .day-spacer { grid-column: 1 / -1; height: 2px; }
+  .empty-row { grid-column: 1 / -1; font-size: 11px; color: var(--text-dim); padding: 10px 0; }
+
+
+  /* ── Mobile responsive ── */
+  @media (max-width: 700px) {
+    .page-shell { padding: 12px 14px 20px; }
+    .page-tabs { padding: 0 14px; }
+    .toggle-group, .view-tabs, .divider-v { display: none !important; }
+    .toolbar-label { display: none; }
+    .mobile-selects { display: flex !important; gap: 8px; flex-wrap: wrap; }
+    .mobile-select {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: var(--surface2);
+      color: var(--text);
+      border: 0.5px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237c7f8e'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      padding-right: 24px;
+    }
+    .mobile-select:focus { outline: none; border-color: var(--now); }
+    .reset-btn { margin-left: 0; }
+    header { flex-direction: column; gap: 8px; }
+    .now-badge { text-align: left; min-width: unset; }
+  }
+  .mobile-selects { display: none; }
+
+  /* ── Tooltip ── */
+  .tooltip { position: fixed; background: var(--surface2); border: 0.5px solid var(--border-strong); border-radius: 6px; padding: 6px 10px; font-size: 11px; color: var(--text); pointer-events: none; z-index: 1000; white-space: nowrap; opacity: 0; transition: opacity 0.1s; font-family: var(--font-mono); }
+  .tooltip.visible { opacity: 1; }
+  .tooltip .tip-time { color: var(--now); font-weight: 500; }
+  .tooltip .tip-status-open { color: #6ee7b7; }
+  .tooltip .tip-status-closed { color: var(--text-muted); }
+
+  /* ── Footer ── */
+  .footer { margin-top: 12px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); }
+  .legend-swatch { width: 24px; height: 10px; border-radius: 3px; }
+  .legend-swatch.nz   { background: var(--nz); }
+  .legend-swatch.au   { background: var(--au); }
+  .legend-swatch.za   { background: var(--za); }
+  .legend-swatch.ta   { background: var(--ta); }
+  .legend-swatch.uk   { background: var(--uk); }
+  .legend-swatch.open { background: var(--open); }
+  .legend-swatch.now  { background: var(--now); }
+  .tz-note { font-size: 10px; color: var(--text-dim); margin-top: 20px; letter-spacing: 0.04em; line-height: 1.9; }
+
+  /* ── Annual Overview ── */
+  .annual-grid-outer { overflow-x: auto; margin-top: 20px; }
+  .annual-table { border-collapse: collapse; width: 100%; min-width: 700px; }
+  .annual-table th {
+    font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em;
+    padding: 6px 10px; text-align: left; border-bottom: 0.5px solid var(--border-strong);
+    white-space: nowrap; background: var(--bg);
+  }
+  .annual-table th.day-col { min-width: 120px; }
+  .annual-table td { padding: 5px 10px; font-size: 11px; vertical-align: middle; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
+  .annual-table td.period-cell { color: var(--text-muted); font-size: 11px; }
+  .annual-table tr.section-header td { padding-top: 20px; padding-bottom: 4px; }
+  .annual-table tr.section-header .section-label {
+    font-family: var(--font-display); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    grid-column: 1 / -1;
+  }
+  .annual-table tr:hover td { background: var(--surface); }
+
+  .hours-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.03em;
+  }
+  .hours-pill.open-pill  { background: rgba(34,197,94,0.18); color: #86efac; }
+  .hours-pill.closed-pill { background: rgba(255,255,255,0.05); color: var(--text-dim); }
+
+  .dst-badge {
+    font-size: 9px; font-family: var(--font-mono);
+    background: rgba(255,179,64,0.15); color: var(--now);
+    border-radius: 3px; padding: 1px 5px; margin-left: 5px;
+    vertical-align: middle; letter-spacing: 0.05em;
+  }
+
+  .annual-empty { font-size: 12px; color: var(--text-dim); padding: 40px 0; text-align: center; }
+
+  .p2-toolbar { margin-bottom: 8px; }
+
+  @media (max-width: 600px) {
+    body { padding: 0; }
+    .page-shell { padding: 20px 16px 40px; }
+    .header-left h1 { font-size: 20px; }
+    .now-badge .now-time { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Page-level tabs -->
+<nav class="page-tabs">
+  <button class="page-tab active" data-page="current">Current Time</button>
+  <button class="page-tab" data-page="annual">Annual Overview</button>
+  <a href="https://bsh3p.github.io/CRMSD/" target="_blank" rel="noopener" class="page-tab-link">CRMSD Data and Forms ↗</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 1 — CURRENT TIME
+═══════════════════════════════════════════════ -->
+<div class="page-content active" id="page-current">
+<div class="page-shell">
+
+  <header>
+    <div class="header-left">
+      <h1>Coverage Hours</h1>
+      <p>All times shown in Brisbane time (AEST, UTC+10)</p>
+    </div>
+    <div class="now-badge">
+      <div class="now-time" id="liveTime">--:--</div>
+      <div class="now-day" id="liveDay">Brisbane</div>
+    </div>
+  </header>
+
+  <!-- Single toolbar row: View · Brand · Country -->
+  <div class="toolbar-row" style="margin-bottom:16px;flex-wrap:wrap;">
+    <span class="toolbar-label">View</span>
+    <div class="view-tabs" style="margin-bottom:0;">
+      <button class="view-tab active" id="viewSimple">Simple</button>
+      <button class="view-tab" id="viewBrand">Brand</button>
+    </div>
+    <div class="divider-v"></div>
+    <span class="toolbar-label">Brand</span>
+    <div class="toggle-group" id="p1-brandToggles">
+      <button class="toggle-btn active" data-brand="fcb"><span class="dot" style="background:#e8c87a"></span>FCB</button>
+      <button class="toggle-btn active" data-brand="ta"><span class="dot" style="background:var(--ta)"></span>TA</button>
+    </div>
+    <div class="divider-v"></div>
+    <span class="toolbar-label">Country</span>
+    <div class="toggle-group" id="p1-countryToggles">
+      <button class="toggle-btn active" data-country="nz"><span class="dot" style="background:var(--nz)"></span>New Zealand</button>
+      <button class="toggle-btn active" data-country="au"><span class="dot" style="background:var(--au)"></span>Australia</button>
+      <button class="toggle-btn active" data-country="za"><span class="dot" style="background:var(--za)"></span>South Africa</button>
+      <button class="toggle-btn active" data-country="uk"><span class="dot" style="background:var(--uk)"></span>United Kingdom</button>
+    </div>
+    <button class="reset-btn" id="p1-reset" title="Reset all filters">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+      Reset
+    </button>
+  </div>
+
+  <!-- Mobile fallback selects (hidden on desktop) -->
+  <div class="mobile-selects" id="p1-mobile-selects">
+    <select class="mobile-select" id="mob-view">
+      <option value="simple">View: Simple</option>
+      <option value="brand">View: Brand</option>
+    </select>
+    <select class="mobile-select" id="mob-brand" multiple size="1">
+      <option value="fcb" selected>Brand: FCB</option>
+      <option value="ta" selected>Brand: TA</option>
+    </select>
+    <select class="mobile-select" id="mob-country" multiple size="1">
+      <option value="nz" selected>Country: NZ</option>
+      <option value="au" selected>Country: AU</option>
+      <option value="za" selected>Country: ZA</option>
+      <option value="uk" selected>Country: UK</option>
+    </select>
+  </div>
+
+  <div class="grid-outer">
+    <div class="grid-wrap" id="mainGrid"></div>
+  </div>
+
+  <div class="footer" id="p1-footer">
+    <div class="legend-item" id="leg-simple"><div class="legend-swatch open"></div>Open (any brand)</div>
+    <div class="legend-item" id="leg-nz" style="display:none"><div class="legend-swatch nz"></div>FCB NZ open</div>
+    <div class="legend-item" id="leg-au" style="display:none"><div class="legend-swatch au"></div>FCB AU open</div>
+    <div class="legend-item" id="leg-za" style="display:none"><div class="legend-swatch za"></div>FCB ZA open</div>
+    <div class="legend-item" id="leg-uk" style="display:none"><div class="legend-swatch uk"></div>FCB UK open</div>
+    <div class="legend-item" id="leg-ta" style="display:none"><div class="legend-swatch ta"></div>TA open</div>
+    <div class="legend-item"><div class="legend-swatch now"></div>Current Brisbane hour</div>
+  </div>
+  <div class="tz-note" id="tzNote"></div>
+
+</div><!-- /page-shell -->
+</div><!-- /page-current -->
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 2 — ANNUAL OVERVIEW
+═══════════════════════════════════════════════ -->
+<div class="page-content" id="page-annual">
+<div class="page-shell">
+
+  <header>
+    <div class="header-left">
+      <h1>Annual Overview</h1>
+      <p>Operating hours throughout the year, adjusted for daylight saving</p>
+    </div>
+  </header>
+
+  <!-- Annual view sub-tabs + Brand + Country filters -->
+  <div class="toolbar-row p2-toolbar">
+    <span class="toolbar-label">View</span>
+    <div class="view-tabs">
+      <button class="view-tab active" id="annualViewPeriod">By Period</button>
+      <button class="view-tab" id="annualViewCountry">By Country</button>
+    </div>
+    <div class="divider-v"></div>
+    <span class="toolbar-label">Brand</span>
+    <div class="toggle-group" id="p2-brandToggles">
+      <button class="toggle-btn active" data-brand="fcb"><span class="dot" style="background:#e8c87a"></span>FCB</button>
+      <button class="toggle-btn active" data-brand="ta"><span class="dot" style="background:var(--ta)"></span>TA</button>
+    </div>
+    <div class="divider-v"></div>
+    <span class="toolbar-label">Country</span>
+    <div class="toggle-group" id="p2-countryToggles">
+      <button class="toggle-btn active" data-country="nz"><span class="dot" style="background:var(--nz)"></span>New Zealand</button>
+      <button class="toggle-btn active" data-country="au"><span class="dot" style="background:var(--au)"></span>Australia</button>
+      <button class="toggle-btn active" data-country="za"><span class="dot" style="background:var(--za)"></span>South Africa</button>
+      <button class="toggle-btn active" data-country="uk"><span class="dot" style="background:var(--uk)"></span>United Kingdom</button>
+    </div>
+    <button class="reset-btn" id="p2-reset" title="Reset all filters">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+      Reset
+    </button>
+  </div>
+
+  <div class="annual-grid-outer">
+    <div id="annualContent"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- Tooltip (shared) -->
+<div class="tooltip" id="tooltip">
+  <div id="tip-label"></div>
+  <div class="tip-time" id="tip-time"></div>
+  <div id="tip-status"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+const DAYS  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const HOURS = Array.from({length:24},(_,i)=>i);
+
+const entries = [
+  { brand:'fcb', country:'nz', label:'FCB · NZ', barClass:'bar-fcb-nz', timezone:'Pacific/Auckland',
+    schedule:[[9,21],[9,21],[9,21],[9,21],[9,21],[9,19],[10,17]] },
+  { brand:'fcb', country:'au', label:'FCB · AU', barClass:'bar-fcb-au', timezone:'Australia/Brisbane',
+    schedule:[[7,21],[7,21],[7,21],[7,22],[7,22],[7,19],[7,19]] },
+  { brand:'fcb', country:'za', label:'FCB · ZA', barClass:'bar-fcb-za', timezone:'Africa/Johannesburg',
+    schedule:[[9,21],[9,21],[9,21],[9,21],[9,21],[8,21],[9,21]] },
+  { brand:'fcb', country:'uk', label:'FCB · UK', barClass:'bar-fcb-uk', timezone:'Europe/London',
+    schedule:[[9,18],[9,18],[9,18],[9,18],[9,18],[9,18],[10,16]] },
+  { brand:'ta',  country:'au', label:'TA · AU',  barClass:'bar-ta-au',  timezone:'Australia/Brisbane',
+    schedule:[[9,19],[9,19],[9,19],[9,19],[9,19],null,null] },
+  { brand:'ta',  country:'nz', label:'TA · NZ',  barClass:'bar-ta-nz',  timezone:'Pacific/Auckland',
+    schedule:[[9,17],[9,17],[9,17],[9,17],[9,17],null,null] }
+];
+
+// Country display labels
+const COUNTRY_LABELS = { nz:'New Zealand', au:'Australia', za:'South Africa', uk:'United Kingdom' };
+
+// ═══════════════════════════════════════════════════════
+// STATE  (page 1 and page 2 are independent)
+// ═══════════════════════════════════════════════════════
+let p1 = { activeBrands: new Set(['fcb','ta']), inactiveBrands: new Set(), activeCountries: new Set(['nz','au','za','uk']), inactiveCountries: new Set(), filterDay: -1 };
+let p2 = { activeBrands: new Set(['fcb','ta']), inactiveBrands: new Set(), activeCountries: new Set(['nz','au','za','uk']), inactiveCountries: new Set() };
+let viewMode = 'simple'; // 'simple' | 'brand'
+
+// ═══════════════════════════════════════════════════════
+// TIMEZONE / DST
+// ═══════════════════════════════════════════════════════
+let offsetCache = {};
+
+function getUTCOffset(tz, d) {
+  const parts = new Intl.DateTimeFormat('en-AU', {
+    timeZone: tz, year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+  }).formatToParts(d);
+  const get = t => parseInt(parts.find(p=>p.type===t).value);
+  const local = new Date(Date.UTC(get('year'),get('month')-1,get('day'),get('hour'),get('minute'),get('second')));
+  return (local - d) / 3600000;
+}
+
+function getTzOffsetFromBrisbane(tz, d) {
+  return getUTCOffset(tz, d) - getUTCOffset('Australia/Brisbane', d);
+}
+
+function getOffset(entry, dayIndex) {
+  const key = entry.timezone + '_' + dayIndex;
+  if (offsetCache[key] !== undefined) return offsetCache[key];
+  const now = new Date();
+  const brisbaneDay = getBrisbaneNow().dayIndex;
+  const diff = dayIndex - brisbaneDay;
+  const sample = new Date(now.getTime() + diff * 86400000);
+  sample.setHours(12,0,0,0);
+  const off = getTzOffsetFromBrisbane(entry.timezone, sample);
+  offsetCache[key] = off;
+  return off;
+}
+
+function getBrisbaneNow() {
+  const now = new Date();
+  const hourStr = new Intl.DateTimeFormat('en-AU',{timeZone:'Australia/Brisbane',hour:'numeric',hour12:false}).format(now);
+  const hour = parseInt(hourStr) % 24;
+  const dayStr = new Intl.DateTimeFormat('en-AU',{timeZone:'Australia/Brisbane',weekday:'long'}).format(now);
+  const dayMap = {Monday:0,Tuesday:1,Wednesday:2,Thursday:3,Friday:4,Saturday:5,Sunday:6};
+  return { hour, dayIndex: dayMap[dayStr]??0, dayName: dayStr };
+}
+
+function isOpenAtBrisbane(entry, dayIndex, brisbaneHour) {
+  const offset = getOffset(entry, dayIndex);
+  let localHour = brisbaneHour + offset;
+  let effDay = dayIndex;
+  if (localHour < 0)   { effDay = (dayIndex-1+7)%7; localHour += 24; }
+  else if (localHour >= 24) { effDay = (dayIndex+1)%7; localHour -= 24; }
+  const sched = entry.schedule[effDay];
+  if (!sched) return false;
+  return localHour >= sched[0] && localHour < sched[1];
+}
+
+// ═══════════════════════════════════════════════════════
+// FORMAT
+// ═══════════════════════════════════════════════════════
+function formatHour(h) {
+  if (h===0) return '12am'; if (h===12) return '12pm';
+  return h<12 ? h+'am' : (h-12)+'pm';
+}
+function formatHourRange(h) { return formatHour(h)+' – '+formatHour((h+1)%24); }
+
+function formatLocalHour(h) {
+  const hh = String(h).padStart(2,'0');
+  return hh+':00';
+}
+
+// ═══════════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════════
+function updateClock() {
+  const d = new Date();
+  const timeStr = new Intl.DateTimeFormat('en-AU',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hour12:false}).format(d);
+  const now = getBrisbaneNow();
+  document.getElementById('liveTime').textContent = timeStr;
+  document.getElementById('liveDay').textContent = now.dayName+' · Brisbane';
+}
+
+// ═══════════════════════════════════════════════════════
+// TZ NOTE
+// ═══════════════════════════════════════════════════════
+function updateTzNote() {
+  const now = new Date();
+  const visible = entries.filter(e => p1.activeBrands.has(e.brand) && p1.activeCountries.has(e.country));
+  const seen = new Set(); const parts = [];
+  visible.forEach(e => {
+    if (seen.has(e.timezone)) return; seen.add(e.timezone);
+    const off = getTzOffsetFromBrisbane(e.timezone, now);
+    const tzLabel = new Intl.DateTimeFormat('en-AU',{timeZone:e.timezone,timeZoneName:'short'}).formatToParts(now).find(p=>p.type==='timeZoneName').value;
+    const rel = off===0 ? 'Brisbane reference' : Math.abs(off)+' hr'+(Math.abs(off)!==1?'s':'')+(off>0?' ahead of':' behind')+' Brisbane';
+    parts.push(`${tzLabel} (${e.country.toUpperCase()}) — ${rel}`);
+  });
+  document.getElementById('tzNote').innerHTML = parts.join(' &nbsp;·&nbsp; ');
+}
+
+// ═══════════════════════════════════════════════════════
+// LEGEND
+// ═══════════════════════════════════════════════════════
+function updateLegend() {
+  const isBrand = viewMode === 'brand';
+  document.getElementById('leg-simple').style.display = isBrand ? 'none' : '';
+  const show = c => p1.activeCountries.has(c) && (isBrand ? true : false);
+  ['nz','au','za','uk'].forEach(c => {
+    document.getElementById('leg-'+c).style.display = (isBrand && p1.activeCountries.has(c)) ? '' : 'none';
+  });
+  document.getElementById('leg-ta').style.display = (isBrand && p1.activeBrands.has('ta')) ? '' : 'none';
+}
+
+// Day buttons removed — always show all days
+
+// ═══════════════════════════════════════════════════════
+// TOOLTIP
+// ═══════════════════════════════════════════════════════
+const tooltip  = document.getElementById('tooltip');
+const tipLabel = document.getElementById('tip-label');
+const tipTime  = document.getElementById('tip-time');
+const tipStat  = document.getElementById('tip-status');
+
+function showTooltip(e, labelText, dayIndex, hour, open, localHour) {
+  tipLabel.textContent = labelText+' · '+DAYS[dayIndex];
+  tipTime.textContent  = 'Brisbane: '+formatHourRange(hour);
+  if (open) {
+    tipStat.innerHTML = '<span class="tip-status-open">● Open</span>'
+      +(localHour!==null?'  <span style="color:var(--text-muted);font-size:10px;">Local: '+formatHourRange(localHour)+'</span>':'');
+  } else {
+    tipStat.innerHTML = '<span class="tip-status-closed">○ Closed</span>';
+  }
+  tooltip.classList.add('visible');
+  positionTooltip(e);
+}
+function positionTooltip(e) {
+  const tw=tooltip.offsetWidth||200, th=tooltip.offsetHeight||60;
+  let x=e.clientX+14, y=e.clientY-th-8;
+  if (x+tw>window.innerWidth-10) x=e.clientX-tw-14;
+  if (y<8) y=e.clientY+16;
+  tooltip.style.left=x+'px'; tooltip.style.top=y+'px';
+}
+function hideTooltip() { tooltip.classList.remove('visible'); }
+
+function showSimpleTooltip(e, dayIndex, hour, openOnes) {
+  const brisLine = '<div style="color:var(--now);font-weight:500;margin-bottom:4px;">Brisbane: '+DAYS[dayIndex]+' '+formatHour(hour)+' – '+formatHour((hour+1)%24)+'</div>';
+  let lines = brisLine;
+  if (!openOnes.length) {
+    lines += '<div style="color:var(--text-muted);font-size:10px;">○ All closed</div>';
+  } else {
+    openOnes.forEach(en => {
+      const off = getOffset(en, dayIndex);
+      const localOpen  = ((en.schedule[dayIndex] ? en.schedule[dayIndex][0] : 0));
+      const localClose = ((en.schedule[dayIndex] ? en.schedule[dayIndex][1] : 0));
+      // find effective schedule accounting for day wrap
+      let effDay = dayIndex;
+      let testH = hour + off;
+      if (testH < 0) effDay = (dayIndex-1+7)%7;
+      else if (testH >= 24) effDay = (dayIndex+1)%7;
+      const sched = en.schedule[effDay];
+      const lo = sched ? sched[0] : 0;
+      const lc = sched ? sched[1] : 0;
+      lines += '<div style="color:var(--text);font-size:10.5px;margin-top:3px;">'
+        + '<span style="opacity:0.6;">'+en.label+'</span> '
+        + '<span style="color:#6ee7b7;">'+formatHour(lo)+' – '+formatHour(lc)+'</span> local'
+        + '</div>';
+    });
+  }
+  tooltip.innerHTML = lines;
+  tooltip.classList.add('visible');
+  positionTooltip(e);
+}
+document.addEventListener('mousemove', e=>{ if(tooltip.classList.contains('visible')) positionTooltip(e); });
+
+// ═══════════════════════════════════════════════════════
+// PAGE 1 GRID — BRAND VIEW
+// ═══════════════════════════════════════════════════════
+function buildGridBrand(frag, visible, daysToShow, now) {
+  // Header label
+  const hl = document.createElement('div'); hl.className='gh-label'; hl.textContent='Brand · Country'; frag.appendChild(hl);
+  HOURS.forEach(h => {
+    const cell = document.createElement('div');
+    cell.className='gh-cell'+(p1.filterDay!==-1&&p1.filterDay===now.dayIndex&&h===now.hour?' now-col-h':'');
+    cell.textContent=formatHour(h); frag.appendChild(cell);
+  });
+
+  daysToShow.forEach((dayIndex,di) => {
+    const isToday = dayIndex===now.dayIndex;
+    const dh = document.createElement('div');
+    dh.className='day-heading'+(isToday?' today-label':'');
+    dh.textContent=DAYS[dayIndex]+(isToday?' — today':''); frag.appendChild(dh);
+
+    if (!visible.length) {
+      const emp=document.createElement('div'); emp.className='empty-row';
+      emp.textContent='No entries selected.'; frag.appendChild(emp);
+    } else {
+      visible.forEach(entry => {
+        const lbl=document.createElement('div'); lbl.className='entry-label'; lbl.textContent=entry.label; frag.appendChild(lbl);
+        HOURS.forEach(h => {
+          const open=isOpenAtBrisbane(entry,dayIndex,h);
+          const isNow=isToday&&h===now.hour;
+          const cell=document.createElement('div'); cell.className='entry-cell'+(isNow?' now-col':'');
+          const bar=document.createElement('div'); bar.className='bar '+(open?entry.barClass:'bar-off')+(isNow?' now-ring':'');
+          const localH = open ? (((h+getOffset(entry,dayIndex))%24)+24)%24 : null;
+          bar.addEventListener('mouseenter', e=>showTooltip(e,entry.label,dayIndex,h,open,localH));
+          bar.addEventListener('mouseleave', hideTooltip);
+          cell.appendChild(bar); frag.appendChild(cell);
+        });
+      });
+    }
+    if (di<daysToShow.length-1) { const sp=document.createElement('div'); sp.className='day-spacer'; frag.appendChild(sp); }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// PAGE 1 GRID — SIMPLE VIEW
+// ═══════════════════════════════════════════════════════
+function buildGridSimple(frag, visible, daysToShow, now) {
+  // Header label
+  const hl = document.createElement('div'); hl.className='gh-label'; hl.textContent='Day'; frag.appendChild(hl);
+  HOURS.forEach(h => {
+    const cell = document.createElement('div');
+    cell.className='gh-cell'+(p1.filterDay!==-1&&p1.filterDay===now.dayIndex&&h===now.hour?' now-col-h':'');
+    cell.textContent=formatHour(h); frag.appendChild(cell);
+  });
+
+  daysToShow.forEach((dayIndex,di) => {
+    const isToday = dayIndex===now.dayIndex;
+    const dh = document.createElement('div');
+    dh.className='day-heading'+(isToday?' today-label':'');
+    dh.textContent=DAYS[dayIndex]+(isToday?' — today':''); frag.appendChild(dh);
+
+    if (!visible.length) {
+      const emp=document.createElement('div'); emp.className='empty-row';
+      emp.textContent='No entries selected.'; frag.appendChild(emp);
+    } else {
+      // Single unified row — union of all visible entries
+      const lbl=document.createElement('div'); lbl.className='entry-label'; lbl.textContent=''; frag.appendChild(lbl);
+      HOURS.forEach(h => {
+        const anyOpen = visible.some(e => isOpenAtBrisbane(e,dayIndex,h));
+        const isNow = isToday&&h===now.hour;
+        const cell=document.createElement('div'); cell.className='entry-cell'+(isNow?' now-col':'');
+        const bar=document.createElement('div');
+        bar.className='bar '+(anyOpen?'bar-open':'bar-off')+(isNow?' now-ring':'');
+        // Tooltip: list which entries are open
+        bar.addEventListener('mouseenter', e => {
+          const openOnes = visible.filter(en => isOpenAtBrisbane(en,dayIndex,h));
+          showSimpleTooltip(e, dayIndex, h, openOnes);
+        });
+        bar.addEventListener('mouseleave', hideTooltip);
+        cell.appendChild(bar); frag.appendChild(cell);
+      });
+    }
+    if (di<daysToShow.length-1) { const sp=document.createElement('div'); sp.className='day-spacer'; frag.appendChild(sp); }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// BUILD GRID (dispatcher)
+// ═══════════════════════════════════════════════════════
+function buildGrid() {
+  offsetCache = {};
+  const now = getBrisbaneNow();
+  const grid = document.getElementById('mainGrid');
+  const visible = entries.filter(e=>p1.activeBrands.has(e.brand)&&p1.activeCountries.has(e.country));
+  const daysToShow = p1.filterDay===-1 ? DAYS.map((_,i)=>i) : [p1.filterDay];
+  const frag = document.createDocumentFragment();
+
+  if (viewMode==='simple') buildGridSimple(frag,visible,daysToShow,now);
+  else buildGridBrand(frag,visible,daysToShow,now);
+
+  grid.innerHTML=''; grid.appendChild(frag);
+  updateTzNote();
+  updateLegend();
+}
+
+// ═══════════════════════════════════════════════════════
+// ANNUAL OVERVIEW
+// ═══════════════════════════════════════════════════════
+
+let annualViewMode = 'period'; // 'period' | 'country'
+
+function computeAnnualPeriods(timezone) {
+  const year = new Date().getFullYear();
+  const periods = [];
+  let currentOffset = null, periodStart = null;
+  for (let month=0; month<12; month++) {
+    for (let day=1; day<=31; day++) {
+      const d = new Date(year, month, day);
+      if (d.getMonth() !== month) break;
+      const off = getTzOffsetFromBrisbane(timezone, d);
+      if (currentOffset === null || off !== currentOffset) {
+        if (periodStart !== null)
+          periods.push({ start: periodStart, end: new Date(year,month,day-1), offset: currentOffset });
+        currentOffset = off;
+        periodStart = new Date(year,month,day);
+      }
+    }
+  }
+  periods.push({ start: periodStart, end: new Date(year,11,31), offset: currentOffset });
+  return periods;
+}
+
+function formatDate(d) {
+  return d.toLocaleDateString('en-AU',{day:'numeric',month:'short'});
+}
+
+// Collect all unique transition dates across all visible timezones,
+// producing a merged list of periods where ALL offsets are stable
+function computeMergedPeriods(visibleEntries) {
+  const year = new Date().getFullYear();
+  // Get unique timezones
+  const tzSet = new Set(visibleEntries.map(e=>e.timezone));
+  const tzList = [...tzSet];
+
+  // Collect all break-points (dates where any tz changes offset)
+  const breakDates = new Set();
+  breakDates.add(new Date(year,0,1).getTime());
+  breakDates.add(new Date(year,11,31).getTime());
+
+  tzList.forEach(tz => {
+    let prev = null;
+    for (let month=0; month<12; month++) {
+      for (let day=1; day<=31; day++) {
+        const d = new Date(year,month,day);
+        if (d.getMonth()!==month) break;
+        const off = getTzOffsetFromBrisbane(tz, d);
+        if (prev!==null && off!==prev) breakDates.add(d.getTime());
+        prev = off;
+      }
+    }
+  });
+
+  const sorted = [...breakDates].sort((a,b)=>a-b);
+  const periods = [];
+  for (let i=0; i<sorted.length; i++) {
+    const start = new Date(sorted[i]);
+    const end   = i < sorted.length-1 ? new Date(sorted[i+1]-86400000) : new Date(year,11,31);
+    // Snapshot offsets for all timezones during this period (use start date)
+    const offsets = {};
+    tzList.forEach(tz => { offsets[tz] = getTzOffsetFromBrisbane(tz, start); });
+    periods.push({ start, end, offsets });
+  }
+  return periods;
+}
+
+function pillHtml(text, open) {
+  return `<span class="hours-pill ${open?'open-pill':'closed-pill'}">${text}</span>`;
+}
+
+// ── VIEW 1: Grouped by date period (merged across all countries) ──
+function buildAnnualByPeriod(visible) {
+  if (!visible.length) return '<div class="annual-empty">No entries selected.</div>';
+
+  const periods = computeMergedPeriods(visible);
+  // Deduplicate consecutive identical periods (no DST change between them)
+  const merged = [];
+  periods.forEach(p => {
+    if (!merged.length) { merged.push({...p}); return; }
+    const prev = merged[merged.length-1];
+    const sameOffsets = Object.keys(p.offsets).every(tz=>p.offsets[tz]===prev.offsets[tz]);
+    if (sameOffsets) { prev.end = p.end; }
+    else merged.push({...p});
+  });
+
+  // Table header: Period | Mon Tue ... Sun
+  let html = '<table class="annual-table"><thead><tr>';
+  html += '<th class="day-col" style="min-width:220px;">Period</th>';
+  DAYS.forEach(d => { html += `<th>${d.slice(0,3)}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  merged.forEach((period, pi) => {
+    const periodLabel = formatDate(period.start) + ' \u2013 ' + formatDate(period.end);
+
+    // For each day, collect all open entries and their Brisbane hours
+    // One row per entry, but period label spans all entry rows
+    const rowsData = visible.map(entry => {
+      const off = period.offsets[entry.timezone];
+      return DAYS.map((_, dayIndex) => {
+        const sched = entry.schedule[dayIndex];
+        if (!sched) return null;
+        const oB = ((sched[0]-off)%24+24)%24;
+        const cB = ((sched[1]-off)%24+24)%24;
+        return { label: entry.label, oB, cB };
+      });
+    });
+
+    // Group by day: collect unique open ranges per day
+    // We'll show one row per unique "signature" across days
+    // Simplest readable approach: one row per entry
+    visible.forEach((entry, ei) => {
+      const off = period.offsets[entry.timezone];
+      html += '<tr>';
+      if (ei === 0) {
+        html += `<td class="period-cell" rowspan="${visible.length}" style="vertical-align:top;padding-top:7px;line-height:1.6;">
+          <span style="font-weight:500;">${periodLabel}</span>`;
+        // Show offset notes for any tz that differs from Brisbane
+        const offNotes = [...new Set(visible.map(e=>e.timezone))].map(tz => {
+          const o = period.offsets[tz];
+          const countries = visible.filter(e=>e.timezone===tz).map(e=>COUNTRY_LABELS[e.country]).filter((v,i,a)=>a.indexOf(v)===i).join(', ');
+          if (o===0) return null;
+          return `<span style="color:var(--text-dim);font-size:10px;">${countries}: ${o>0?'+':''}${o}h</span>`;
+        }).filter(Boolean);
+        if (offNotes.length) html += '<br>' + offNotes.join('<br>');
+        html += '</td>';
+      }
+      DAYS.forEach((_, dayIndex) => {
+        const sched = entry.schedule[dayIndex];
+        if (!sched) {
+          html += `<td>${pillHtml('Closed', false)}</td>`;
+        } else {
+          const oB = ((sched[0]-off)%24+24)%24;
+          const cB = ((sched[1]-off)%24+24)%24;
+          html += `<td title="${entry.label}">${pillHtml(`${entry.label.replace(' · ',' ')} ${formatLocalHour(oB)}\u2013${formatLocalHour(cB)}`, true)}</td>`;
+        }
+      });
+      html += '</tr>';
+    });
+
+    if (pi < merged.length-1)
+      html += `<tr><td colspan="${DAYS.length+1}" style="height:6px;border:none;"></td></tr>`;
+  });
+
+  html += '</tbody></table>';
+  html += '<div style="font-size:10px;color:var(--text-dim);margin-top:8px;">All times in Brisbane time (AEST, UTC+10). Offsets shown where DST applies.</div>';
+  return html;
+}
+
+// ── VIEW 2: Grouped by country (original behaviour) ──
+function buildAnnualByCountry(visible) {
+  if (!visible.length) return '<div class="annual-empty">No entries selected.</div>';
+
+  const byCountry = {};
+  visible.forEach(e => {
+    if (!byCountry[e.country]) byCountry[e.country] = [];
+    byCountry[e.country].push(e);
+  });
+
+  let html = '';
+  Object.keys(byCountry).forEach(country => {
+    const countryEntries = byCountry[country];
+    const timezone = countryEntries[0].timezone;
+    const periods = computeAnnualPeriods(timezone);
+    const hasDST = periods.length > 1;
+
+    html += `<div style="margin-bottom:32px;">`;
+    html += `<div style="font-family:var(--font-display);font-size:13px;font-weight:600;color:var(--text);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:0.5px solid var(--border-strong);">
+      ${COUNTRY_LABELS[country]}${hasDST?' <span class="dst-badge">DST</span>':''}
+    </div>`;
+    html += '<table class="annual-table"><thead><tr>';
+    html += '<th class="day-col">Period</th>';
+    DAYS.forEach(d => { html += `<th>${d.slice(0,3)}</th>`; });
+    html += '</tr></thead><tbody>';
+
+    periods.forEach((period, pi) => {
+      const off = period.offset;
+      const periodLabel = formatDate(period.start)+' \u2013 '+formatDate(period.end);
+      countryEntries.forEach((entry, ei) => {
+        html += '<tr>';
+        if (ei===0) {
+          html += `<td class="period-cell" rowspan="${countryEntries.length}" style="vertical-align:top;padding-top:7px;">
+            ${periodLabel}
+            ${hasDST?`<br><span style="font-size:10px;color:var(--text-dim);">${off>=0?'+':''}${off}h vs Brisbane</span>`:''}
+          </td>`;
+        }
+        DAYS.forEach((_, dayIndex) => {
+          const sched = entry.schedule[dayIndex];
+          if (!sched) {
+            html += `<td>${pillHtml('Closed', false)}</td>`;
+          } else {
+            const oB = ((sched[0]-off)%24+24)%24;
+            const cB = ((sched[1]-off)%24+24)%24;
+            html += `<td>${pillHtml(`${entry.brand.toUpperCase()} ${formatLocalHour(oB)}\u2013${formatLocalHour(cB)}`, true)}</td>`;
+          }
+        });
+        html += '</tr>';
+      });
+      if (pi < periods.length-1)
+        html += `<tr><td colspan="${DAYS.length+1}" style="height:4px;border:none;"></td></tr>`;
+    });
+
+    html += '</tbody></table>';
+    html += '</div>';
+  });
+
+  html += '<div style="font-size:10px;color:var(--text-dim);margin-top:4px;">All times in Brisbane time (AEST, UTC+10)</div>';
+  return html;
+}
+
+// ── Dispatcher ──
+function buildAnnual() {
+  const container = document.getElementById('annualContent');
+  const visible = entries.filter(e=>p2.activeBrands.has(e.brand)&&p2.activeCountries.has(e.country));
+  if (annualViewMode === 'period') container.innerHTML = buildAnnualByPeriod(visible);
+  else container.innerHTML = buildAnnualByCountry(visible);
+}
+
+// ═══════════════════════════════════════════════════════
+// TOGGLE LOGIC — three-state (active / inactive / unavailable)
+// ═══════════════════════════════════════════════════════
+// state.activeBrands / activeCountries = what the user has ON
+// state.inactiveBrands / inactiveCountries = user explicitly turned OFF
+// unavailable = no data exists for that combo (grayed, disabled)
+
+function getAvailableBrands(forCountries) {
+  const s=new Set(); entries.forEach(e=>{if(forCountries.has(e.country))s.add(e.brand);}); return s;
+}
+function getAvailableCountries(forBrands) {
+  const s=new Set(); entries.forEach(e=>{if(forBrands.has(e.brand))s.add(e.country);}); return s;
+}
+function allBrands() { return new Set(entries.map(e=>e.brand)); }
+function allCountries() { return new Set(entries.map(e=>e.country)); }
+
+function updateToggles(brandSelector, countrySelector, state) {
+  // Unavailable = no data exists combining active selection with this toggle
+  // We compute availability based on the FULL active set (not just inactive ones)
+  const availC = getAvailableCountries(state.activeBrands.size ? state.activeBrands : allBrands());
+  const availB = getAvailableBrands(state.activeCountries.size ? state.activeCountries : allCountries());
+
+  document.querySelectorAll(countrySelector).forEach(btn => {
+    const c = btn.dataset.country;
+    const avail = availC.has(c);
+    const active = state.activeCountries.has(c);
+    btn.disabled = !avail;
+    btn.style.cursor = avail ? 'pointer' : 'not-allowed';
+    btn.title = avail ? '' : 'No data for selected brand(s)';
+    if (!avail) {
+      // Truly unavailable — force off, very faded
+      btn.classList.remove('active');
+      btn.style.opacity = '0.15';
+    } else if (active) {
+      btn.classList.add('active');
+      btn.style.opacity = '1';
+    } else {
+      // Available but user turned it off — normal inactive opacity
+      btn.classList.remove('active');
+      btn.style.opacity = '0.35';
+    }
+  });
+
+  document.querySelectorAll(brandSelector).forEach(btn => {
+    const b = btn.dataset.brand;
+    const avail = availB.has(b);
+    const active = state.activeBrands.has(b);
+    btn.disabled = !avail;
+    btn.style.cursor = avail ? 'pointer' : 'not-allowed';
+    btn.title = avail ? '' : 'No data for selected country/countries';
+    if (!avail) {
+      btn.classList.remove('active');
+      btn.style.opacity = '0.15';
+    } else if (active) {
+      btn.classList.add('active');
+      btn.style.opacity = '1';
+    } else {
+      btn.classList.remove('active');
+      btn.style.opacity = '0.35';
+    }
+  });
+}
+
+function wireToggles(brandSelector, countrySelector, state, onUpdate) {
+  document.querySelectorAll(brandSelector).forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      const b = btn.dataset.brand;
+      if (state.activeBrands.has(b)) {
+        if (state.activeBrands.size === 1) return; // keep at least one
+        state.activeBrands.delete(b);
+        state.inactiveBrands.add(b);
+        // If any active country now has no active brand, move it to inactive
+        const stillAvailC = getAvailableCountries(state.activeBrands);
+        state.activeCountries.forEach(c => {
+          if (!stillAvailC.has(c)) {
+            state.activeCountries.delete(c);
+            state.inactiveCountries.add(c);
+          }
+        });
+      } else {
+        // Re-activating a brand — only restore countries that are NOT in inactiveCountries
+        state.activeBrands.add(b);
+        state.inactiveBrands.delete(b);
+        // Do NOT touch activeCountries or inactiveCountries at all
+      }
+      updateToggles(brandSelector, countrySelector, state);
+      onUpdate();
+    });
+  });
+
+  document.querySelectorAll(countrySelector).forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      const c = btn.dataset.country;
+      if (state.activeCountries.has(c)) {
+        if (state.activeCountries.size === 1) return; // keep at least one
+        state.activeCountries.delete(c);
+        state.inactiveCountries.add(c);
+        // If any active brand now has no active country, move it to inactive
+        const stillAvailB = getAvailableBrands(state.activeCountries);
+        state.activeBrands.forEach(b => {
+          if (!stillAvailB.has(b)) {
+            state.activeBrands.delete(b);
+            state.inactiveBrands.add(b);
+          }
+        });
+      } else {
+        // Re-activating a country — do NOT touch activeBrands/inactiveBrands
+        state.activeCountries.add(c);
+        state.inactiveCountries.delete(c);
+      }
+      updateToggles(brandSelector, countrySelector, state);
+      onUpdate();
+    });
+  });
+}
+
+function resetState(state, brandSelector, countrySelector, onUpdate) {
+  state.activeBrands    = new Set(allBrands());
+  state.inactiveBrands  = new Set();
+  state.activeCountries = new Set(allCountries());
+  state.inactiveCountries = new Set();
+  // Re-activate all buttons
+  document.querySelectorAll(brandSelector).forEach(btn => {
+    btn.disabled = false;
+    state.activeBrands.add(btn.dataset.brand);
+    btn.classList.add('active');
+    btn.style.opacity = '1';
+  });
+  document.querySelectorAll(countrySelector).forEach(btn => {
+    btn.disabled = false;
+    state.activeCountries.add(btn.dataset.country);
+    btn.classList.add('active');
+    btn.style.opacity = '1';
+  });
+  onUpdate();
+}
+
+// ═══════════════════════════════════════════════════════
+// PAGE TABS
+// ═══════════════════════════════════════════════════════
+document.querySelectorAll('.page-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.page-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-'+tab.dataset.page).classList.add('active');
+    if (tab.dataset.page==='annual') buildAnnual();
+  });
+});
+
+// ═══════════════════════════════════════════════════════
+// ANNUAL VIEW SUB-TABS
+// ═══════════════════════════════════════════════════════
+document.getElementById('annualViewPeriod').addEventListener('click', () => {
+  annualViewMode = 'period';
+  document.getElementById('annualViewPeriod').classList.add('active');
+  document.getElementById('annualViewCountry').classList.remove('active');
+  buildAnnual();
+});
+document.getElementById('annualViewCountry').addEventListener('click', () => {
+  annualViewMode = 'country';
+  document.getElementById('annualViewCountry').classList.add('active');
+  document.getElementById('annualViewPeriod').classList.remove('active');
+  buildAnnual();
+});
+
+// ═══════════════════════════════════════════════════════
+// VIEW SUB-TABS (Simple / Brand)
+// ═══════════════════════════════════════════════════════
+document.getElementById('viewSimple').addEventListener('click', () => {
+  viewMode='simple';
+  document.getElementById('viewSimple').classList.add('active');
+  document.getElementById('viewBrand').classList.remove('active');
+  buildGrid();
+});
+document.getElementById('viewBrand').addEventListener('click', () => {
+  viewMode='brand';
+  document.getElementById('viewBrand').classList.add('active');
+  document.getElementById('viewSimple').classList.remove('active');
+  buildGrid();
+});
+
+// ═══════════════════════════════════════════════════════
+// MOBILE SELECT WIRING
+// ═══════════════════════════════════════════════════════
+(function() {
+  const mobView    = document.getElementById('mob-view');
+  const mobBrand   = document.getElementById('mob-brand');
+  const mobCountry = document.getElementById('mob-country');
+  if (!mobView) return;
+
+  mobView.addEventListener('change', () => {
+    viewMode = mobView.value;
+    document.getElementById('viewSimple').classList.toggle('active', viewMode==='simple');
+    document.getElementById('viewBrand').classList.toggle('active', viewMode==='brand');
+    buildGrid();
+  });
+
+  function applyMobileFilters() {
+    const selBrands    = Array.from(mobBrand.selectedOptions).map(o=>o.value);
+    const selCountries = Array.from(mobCountry.selectedOptions).map(o=>o.value);
+    p1.activeBrands    = new Set(selBrands);
+    p1.activeCountries = new Set(selCountries);
+    p1.inactiveBrands    = new Set([...allBrands()].filter(b=>!p1.activeBrands.has(b)));
+    p1.inactiveCountries = new Set([...allCountries()].filter(c=>!p1.activeCountries.has(c)));
+    updateToggles('#p1-brandToggles [data-brand]','#p1-countryToggles [data-country]', p1);
+    buildGrid();
+  }
+
+  mobBrand.addEventListener('change', applyMobileFilters);
+  mobCountry.addEventListener('change', applyMobileFilters);
+})();
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+wireToggles('#p1-brandToggles [data-brand]','#p1-countryToggles [data-country]', p1, ()=>{ buildGrid(); });
+wireToggles('#p2-brandToggles [data-brand]','#p2-countryToggles [data-country]', p2, ()=>{ buildAnnual(); });
+
+updateToggles('#p1-brandToggles [data-brand]','#p1-countryToggles [data-country]', p1);
+updateToggles('#p2-brandToggles [data-brand]','#p2-countryToggles [data-country]', p2);
+
+document.getElementById('p1-reset').addEventListener('click', () => {
+  resetState(p1, '#p1-brandToggles [data-brand]', '#p1-countryToggles [data-country]', ()=>{ buildGrid(); });
+});
+document.getElementById('p2-reset').addEventListener('click', () => {
+  resetState(p2, '#p2-brandToggles [data-brand]', '#p2-countryToggles [data-country]', ()=>{ buildAnnual(); });
+});
+
+buildGrid();
+updateClock();
+setInterval(()=>{ updateClock(); buildGrid(); }, 30000);
+</script>
+</body>
+</html>
