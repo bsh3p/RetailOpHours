@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coverage Hours — Brisbane Time</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0e0f12;
@@ -21,12 +21,32 @@
     --za: #ff6b9d;   --za-bg: rgba(255,107,157,0.15);
     --ta: #c084fc;   --ta-bg: rgba(192,132,252,0.15);
     --uk: #f97316;   --uk-bg: rgba(249,115,22,0.15);
+    --ca: #ef4444;   --ca-bg: rgba(239,68,68,0.15);
     --open: #22c55e; --open-bg: rgba(34,197,94,0.15);
     --now: #ffb340;  --now-bg: rgba(255,179,64,0.12);
     --font-display: 'Syne', sans-serif;
     --font-mono: 'DM Mono', monospace;
     --label-w: 220px;
     --cell-w: 38px;
+    /* Theme tokens (dark default) */
+    --text-primary: #e8e9ec;
+    --text-secondary: #7c7f8e;
+    --accent-1: var(--now);
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+  }
+  [data-theme="light"] {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface2: #eef0f3;
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.15);
+    --text: #1a1b1f;
+    --text-muted: #6b7280;
+    --text-dim: #9ca3af;
+    --text-primary: #1a1b1f;
+    --text-secondary: #6b7280;
+    --now-bg: rgba(255,179,64,0.1);
+    --shadow: 0 1px 3px rgba(0,0,0,0.12);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: var(--font-mono); min-height: 100vh; padding: 0; }
@@ -34,65 +54,9 @@
   /* ── Page shell ── */
   .page-shell { padding: 20px 32px 24px; }
 
-  /* ── Page tabs (top level) ── */
-  .page-tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 1px solid var(--border-strong);
-    margin-bottom: 0;
-    padding: 0 32px;
-    background: var(--surface);
-  }
-  .page-tab {
-    font-family: var(--font-display);
-    font-size: 13px;
-    font-weight: 600;
-    padding: 10px 22px;
-    cursor: pointer;
-    color: var(--text-muted);
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-    letter-spacing: 0.02em;
-    background: none;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    transition: color 0.15s;
-  }
-  .page-tab:hover { color: var(--text); }
-  .page-tab.active { color: var(--text); border-bottom-color: var(--now); }
-  .page-tab-link {
-    font-family: var(--font-display);
-    font-size: 13px;
-    font-weight: 600;
-    padding: 10px 22px;
-    color: var(--text-dim);
-    letter-spacing: 0.02em;
-    text-decoration: none;
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    transition: color 0.15s;
-  }
-  .page-tab-link:hover { color: var(--text); }
-
+  /* ── Page content panels ── */
   .page-content { display: none; }
   .page-content.active { display: block; }
-
-  /* ── Header ── */
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .header-left h1 { font-family: var(--font-display); font-size: 20px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; color: var(--text); margin-bottom: 2px; }
-  .header-left p { font-size: 12px; color: var(--text-muted); letter-spacing: 0.04em; }
-  .now-badge { background: var(--surface2); border: 0.5px solid var(--border-strong); border-radius: 8px; padding: 6px 14px; text-align: right; min-width: 160px; }
-  .now-badge .now-time { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--now); letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums; }
-  .now-badge .now-day { font-size: 11px; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.06em; text-transform: uppercase; }
 
   /* ── Toolbars ── */
   .toolbar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 0; flex-wrap: wrap; }
@@ -109,10 +73,12 @@
   .toggle-btn { font-family: var(--font-mono); font-size: 11px; padding: 5px 12px; border-radius: 5px; cursor: pointer; letter-spacing: 0.04em; transition: all 0.15s ease; display: flex; align-items: center; gap: 7px; border: 0.5px solid; }
   .toggle-btn .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .toggle-btn[data-country="uk"] { border-color: var(--uk); color: var(--uk); }
+  .toggle-btn[data-country="ca"] { border-color: var(--ca); color: var(--ca); }
   .toggle-btn[data-country="nz"] { border-color: var(--nz); color: var(--nz); }
   .toggle-btn[data-country="au"] { border-color: var(--au); color: var(--au); }
   .toggle-btn[data-country="za"] { border-color: var(--za); color: var(--za); }
   .toggle-btn[data-country="uk"].active { background: var(--uk-bg); }
+  .toggle-btn[data-country="ca"].active { background: var(--ca-bg); }
   .toggle-btn[data-country="nz"].active { background: var(--nz-bg); }
   .toggle-btn[data-country="au"].active { background: var(--au-bg); }
   .toggle-btn[data-country="za"].active { background: var(--za-bg); }
@@ -178,6 +144,7 @@
   .bar-fcb-au { background: var(--au); opacity: 0.85; }
   .bar-fcb-za { background: var(--za); opacity: 0.85; }
   .bar-fcb-uk { background: var(--uk); opacity: 0.85; }
+  .bar-fcb-ca { background: var(--ca); opacity: 0.85; }
   .bar-ta-nz  { background: var(--ta); opacity: 0.85; }
   .bar-ta-au  { background: var(--ta); opacity: 0.85; }
   .bar-open   { background: var(--open); opacity: 0.9; }
@@ -233,6 +200,7 @@
   .legend-swatch.za   { background: var(--za); }
   .legend-swatch.ta   { background: var(--ta); }
   .legend-swatch.uk   { background: var(--uk); }
+  .legend-swatch.ca   { background: var(--ca); }
   .legend-swatch.open { background: var(--open); }
   .legend-swatch.now  { background: var(--now); }
   .tz-note { font-size: 10px; color: var(--text-dim); margin-top: 20px; letter-spacing: 0.04em; line-height: 1.9; }
@@ -281,19 +249,160 @@
 
   @media (max-width: 600px) {
     body { padding: 0; }
-    .page-shell { padding: 20px 16px 40px; }
-    .header-left h1 { font-size: 20px; }
-    .now-badge .now-time { font-size: 22px; }
+    .page-shell { padding: 12px 16px 24px; }
+  }
+
+  /* ══════════════════════════════════════════════
+     SITE HEADER
+  ══════════════════════════════════════════════ */
+  .site-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 32px 0;
+    background: var(--bg);
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+  .site-header__left { display: flex; flex-direction: column; gap: 4px; }
+  .site-header__eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+  }
+  .site-header__title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 800; line-height: 1.05; letter-spacing: -0.02em;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+  }
+  .site-header__title span { color: var(--accent-1); transition: color 0.3s ease; }
+  .site-header__subtitle {
+    font-size: 13px; font-weight: 300;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+  }
+  .site-header__actions {
+    display: flex; align-items: center;
+    gap: 12px; flex-shrink: 0; margin-top: 6px; flex-wrap: wrap;
+  }
+
+  /* Now badge inside actions */
+  .now-badge {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 5px 14px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: var(--shadow);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .now-badge .now-time {
+    font-family: var(--font-display); font-size: 16px; font-weight: 700;
+    color: var(--now); letter-spacing: -0.5px; font-variant-numeric: tabular-nums;
+  }
+  .now-badge .now-day {
+    font-size: 11px; color: var(--text-secondary);
+    letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  .site-header__link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400;
+    color: var(--text-secondary); text-decoration: none;
+    padding: 6px 14px 6px 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 100px; box-shadow: var(--shadow); white-space: nowrap;
+    transition: color 0.3s, background 0.3s, border-color 0.3s, box-shadow 0.3s;
+  }
+  .site-header__link:hover { color: var(--text-primary); border-color: var(--text-muted); }
+  .site-header__link svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  .theme-toggle {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 100px; padding: 6px 14px 6px 10px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400;
+    color: var(--text-secondary); box-shadow: var(--shadow); flex-shrink: 0;
+    transition: color 0.3s, background 0.3s, border-color 0.3s, box-shadow 0.3s;
+  }
+  .theme-toggle:hover { color: var(--text-primary); border-color: var(--text-muted); }
+  .theme-icon { width: 18px; height: 18px; transition: transform 0.4s ease; }
+  .theme-toggle:hover .theme-icon { transform: rotate(20deg); }
+
+  /* Page nav tabs — now sit below the site header */
+  .page-tabs {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--border-strong);
+    padding: 0 32px;
+    background: var(--bg);
+    margin-top: 16px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .page-tab {
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    padding: 10px 20px; cursor: pointer;
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    letter-spacing: 0.01em; background: none;
+    border-top: none; border-left: none; border-right: none;
+    transition: color 0.15s;
+  }
+  .page-tab:hover { color: var(--text-primary); }
+  .page-tab.active { color: var(--text-primary); border-bottom-color: var(--accent-1); }
+  .page-tab-link {
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 400;
+    padding: 10px 20px; color: var(--text-secondary);
+    text-decoration: none; margin-left: auto;
+    display: flex; align-items: center; gap: 6px;
+    transition: color 0.15s;
+  }
+  .page-tab-link:hover { color: var(--text-primary); }
+
+  @media (max-width: 600px) {
+    .site-header { padding: 14px 16px 0; flex-wrap: wrap; }
+    .site-header__actions { margin-top: 0; }
+    .page-tabs { padding: 0 16px; }
+    .site-header__title { font-size: 22px; }
   }
 </style>
 </head>
 <body>
 
-<!-- Page-level tabs -->
+<!-- ══════════════════════════════════════════════
+     SITE HEADER
+══════════════════════════════════════════════ -->
+<header class="site-header">
+  <div class="site-header__left">
+    <span class="site-header__eyebrow">Internal Tools</span>
+    <h1 class="site-header__title">Coverage <span>Hours</span></h1>
+    <p class="site-header__subtitle">All times shown in Brisbane time (AEST, UTC+10)</p>
+  </div>
+  <div class="site-header__actions">
+    <div class="now-badge">
+      <div class="now-time" id="liveTime">--:--</div>
+      <div class="now-day" id="liveDay">Brisbane</div>
+    </div>
+    <a href="https://bsh3p.github.io/Support-Dashboard/" target="_blank" rel="noopener" class="site-header__link">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Support Dashboard
+    </a>
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="theme-icon" id="themeIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"></svg>
+      <span id="themeLabel">System</span>
+    </button>
+  </div>
+</header>
+
+<!-- Page nav tabs -->
 <nav class="page-tabs">
   <button class="page-tab active" data-page="current">Current Time</button>
   <button class="page-tab" data-page="annual">Annual Overview</button>
-  <a href="https://bsh3p.github.io/CRMSD/" target="_blank" rel="noopener" class="page-tab-link">CRMSD Data and Forms ↗</a>
 </nav>
 
 <!-- ═══════════════════════════════════════════════
@@ -301,17 +410,6 @@
 ═══════════════════════════════════════════════ -->
 <div class="page-content active" id="page-current">
 <div class="page-shell">
-
-  <header>
-    <div class="header-left">
-      <h1>Coverage Hours</h1>
-      <p>All times shown in Brisbane time (AEST, UTC+10)</p>
-    </div>
-    <div class="now-badge">
-      <div class="now-time" id="liveTime">--:--</div>
-      <div class="now-day" id="liveDay">Brisbane</div>
-    </div>
-  </header>
 
   <!-- Single toolbar row: View · Brand · Country -->
   <div class="toolbar-row" style="margin-bottom:16px;flex-wrap:wrap;">
@@ -333,6 +431,7 @@
       <button class="toggle-btn active" data-country="au"><span class="dot" style="background:var(--au)"></span>Australia</button>
       <button class="toggle-btn active" data-country="za"><span class="dot" style="background:var(--za)"></span>South Africa</button>
       <button class="toggle-btn active" data-country="uk"><span class="dot" style="background:var(--uk)"></span>United Kingdom</button>
+      <button class="toggle-btn active" data-country="ca"><span class="dot" style="background:var(--ca)"></span>Canada</button>
     </div>
     <button class="reset-btn" id="p1-reset" title="Reset all filters">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
@@ -355,6 +454,7 @@
       <option value="au" selected>Country: AU</option>
       <option value="za" selected>Country: ZA</option>
       <option value="uk" selected>Country: UK</option>
+      <option value="ca" selected>Country: CA</option>
     </select>
   </div>
 
@@ -368,6 +468,7 @@
     <div class="legend-item" id="leg-au" style="display:none"><div class="legend-swatch au"></div>FCB AU open</div>
     <div class="legend-item" id="leg-za" style="display:none"><div class="legend-swatch za"></div>FCB ZA open</div>
     <div class="legend-item" id="leg-uk" style="display:none"><div class="legend-swatch uk"></div>FCB UK open</div>
+    <div class="legend-item" id="leg-ca" style="display:none"><div class="legend-swatch ca"></div>FCB CA open</div>
     <div class="legend-item" id="leg-ta" style="display:none"><div class="legend-swatch ta"></div>TA open</div>
     <div class="legend-item"><div class="legend-swatch now"></div>Current Brisbane hour</div>
   </div>
@@ -381,13 +482,6 @@
 ═══════════════════════════════════════════════ -->
 <div class="page-content" id="page-annual">
 <div class="page-shell">
-
-  <header>
-    <div class="header-left">
-      <h1>Annual Overview</h1>
-      <p>Operating hours throughout the year, adjusted for daylight saving</p>
-    </div>
-  </header>
 
   <!-- Annual view sub-tabs + Brand + Country filters -->
   <div class="toolbar-row p2-toolbar">
@@ -409,6 +503,7 @@
       <button class="toggle-btn active" data-country="au"><span class="dot" style="background:var(--au)"></span>Australia</button>
       <button class="toggle-btn active" data-country="za"><span class="dot" style="background:var(--za)"></span>South Africa</button>
       <button class="toggle-btn active" data-country="uk"><span class="dot" style="background:var(--uk)"></span>United Kingdom</button>
+      <button class="toggle-btn active" data-country="ca"><span class="dot" style="background:var(--ca)"></span>Canada</button>
     </div>
     <button class="reset-btn" id="p2-reset" title="Reset all filters">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
@@ -449,17 +544,31 @@ const entries = [
   { brand:'ta',  country:'au', label:'TA · AU',  barClass:'bar-ta-au',  timezone:'Australia/Brisbane',
     schedule:[[9,19],[9,19],[9,19],[9,19],[9,19],null,null] },
   { brand:'ta',  country:'nz', label:'TA · NZ',  barClass:'bar-ta-nz',  timezone:'Pacific/Auckland',
-    schedule:[[9,17],[9,17],[9,17],[9,17],[9,17],null,null] }
+    schedule:[[9,17],[9,17],[9,17],[9,17],[9,17],null,null] },
+
+  // ── Canada (FCB) ─────────────────────────────────────────────────────────
+  // ET — Ontario stores (Ottawa, Toronto ×3, Newmarket, Burlington)
+  // Earliest open: 8:30, latest close: 18:30 → bracket [8,19]
+  { brand:'fcb', country:'ca', label:'FCB · CA (Eastern)', barClass:'bar-fcb-ca', timezone:'America/Toronto',
+    schedule:[[8,19],[8,19],[8,19],[8,19],[8,19],[9,18],[12,17]] },
+  // MT — Alberta stores (Calgary ×2)
+  // Direct West 9:00–17:00 Mon–Sat, Direct East 9:30–17:00 Mon–Sun
+  { brand:'fcb', country:'ca', label:'FCB · CA (Mountain)', barClass:'bar-fcb-ca', timezone:'America/Edmonton',
+    schedule:[[9,17],[9,17],[9,17],[9,17],[9,17],[9,17],[9,17]] },
+  // PT — BC/Victoria stores (Vancouver ×2, Kelowna, Coquitlam, Victoria)
+  // Range: 9:00 open, latest close 21:00 (Coquitlam Thu/Fri) → bracket [9,21]
+  { brand:'fcb', country:'ca', label:'FCB · CA (Pacific)', barClass:'bar-fcb-ca', timezone:'America/Vancouver',
+    schedule:[[9,19],[9,19],[9,19],[9,21],[9,21],[9,19],[11,18]] }
 ];
 
 // Country display labels
-const COUNTRY_LABELS = { nz:'New Zealand', au:'Australia', za:'South Africa', uk:'United Kingdom' };
+const COUNTRY_LABELS = { nz:'New Zealand', au:'Australia', za:'South Africa', uk:'United Kingdom', ca:'Canada' };
 
 // ═══════════════════════════════════════════════════════
 // STATE  (page 1 and page 2 are independent)
 // ═══════════════════════════════════════════════════════
-let p1 = { activeBrands: new Set(['fcb','ta']), inactiveBrands: new Set(), activeCountries: new Set(['nz','au','za','uk']), inactiveCountries: new Set(), filterDay: -1 };
-let p2 = { activeBrands: new Set(['fcb','ta']), inactiveBrands: new Set(), activeCountries: new Set(['nz','au','za','uk']), inactiveCountries: new Set() };
+let p1 = { activeBrands: new Set(['fcb','ta']), inactiveBrands: new Set(), activeCountries: new Set(['nz','au','za','uk','ca']), inactiveCountries: new Set(), filterDay: -1 };
+let p2 = { activeBrands: new Set(['fcb','ta']), inactiveBrands: new Set(), activeCountries: new Set(['nz','au','za','uk','ca']), inactiveCountries: new Set() };
 let viewMode = 'simple'; // 'simple' | 'brand'
 
 // ═══════════════════════════════════════════════════════
@@ -563,7 +672,7 @@ function updateLegend() {
   const isBrand = viewMode === 'brand';
   document.getElementById('leg-simple').style.display = isBrand ? 'none' : '';
   const show = c => p1.activeCountries.has(c) && (isBrand ? true : false);
-  ['nz','au','za','uk'].forEach(c => {
+  ['nz','au','za','uk','ca'].forEach(c => {
     document.getElementById('leg-'+c).style.display = (isBrand && p1.activeCountries.has(c)) ? '' : 'none';
   });
   document.getElementById('leg-ta').style.display = (isBrand && p1.activeBrands.has('ta')) ? '' : 'none';
@@ -1095,13 +1204,24 @@ function resetState(state, brandSelector, countrySelector, onUpdate) {
 // ═══════════════════════════════════════════════════════
 // PAGE TABS
 // ═══════════════════════════════════════════════════════
+const pageMeta = {
+  current: { title: 'Coverage <span>Hours</span>', subtitle: 'All times shown in Brisbane time (AEST, UTC+10)' },
+  annual:  { title: 'Annual <span>Overview</span>', subtitle: 'Operating hours throughout the year, adjusted for daylight saving' }
+};
 document.querySelectorAll('.page-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.page-tab').forEach(t=>t.classList.remove('active'));
     document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));
     tab.classList.add('active');
-    document.getElementById('page-'+tab.dataset.page).classList.add('active');
-    if (tab.dataset.page==='annual') buildAnnual();
+    const page = tab.dataset.page;
+    document.getElementById('page-'+page).classList.add('active');
+    // Update site header title + subtitle
+    const meta = pageMeta[page];
+    if (meta) {
+      document.querySelector('.site-header__title').innerHTML = meta.title;
+      document.querySelector('.site-header__subtitle').textContent = meta.subtitle;
+    }
+    if (page==='annual') buildAnnual();
   });
 });
 
@@ -1187,6 +1307,36 @@ document.getElementById('p2-reset').addEventListener('click', () => {
 buildGrid();
 updateClock();
 setInterval(()=>{ updateClock(); buildGrid(); }, 30000);
+</script>
+<script>
+  function getEffectiveTheme() {
+    const stored = localStorage.getItem('theme');
+    if (stored === 'light' || stored === 'dark') return stored;
+    return 'auto';
+  }
+  function applyTheme(theme) {
+    const root  = document.documentElement;
+    const icon  = document.getElementById('themeIcon');
+    const label = document.getElementById('themeLabel');
+    root.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    if (theme === 'light') {
+      label.textContent = 'Light';
+      icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>`;
+    } else if (theme === 'dark') {
+      label.textContent = 'Dark';
+      icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 0010 9.79z"/>`;
+    } else {
+      label.textContent = 'System';
+      icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2"/>`;
+    }
+  }
+  function toggleTheme() {
+    const current = getEffectiveTheme();
+    const next = current === 'auto' ? 'light' : current === 'light' ? 'dark' : 'auto';
+    applyTheme(next);
+  }
+  applyTheme(getEffectiveTheme());
 </script>
 </body>
 </html>
